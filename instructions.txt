@@ -1,0 +1,66 @@
+CS401
+Assignment 1
+Incomplete Stock Analysis Application
+Take over an existing software project. The previous developer has been fired, and this project has now been assigned to you. The project is nearly done, you will simply complete it.
+
+Companies and people often buy and sell stocks. Often, they buy the same stock for different prices at different times. Say a person owns 1000 shares a certain stock (such as Google) they may have bought the stock in amounts of 100 shares over 10 different times with 10 different prices.
+
+We will analyze two different methods of accounting, FIFO and LIFO accounting used for determining the “cost” of a stock. COST is typically calculated when a stock is sold to determined if a profit or loss was made. In our version of FIFO accounting, the price of a stock is averaged starting with the first purchase of that item. Say we sell 250 shares of a stock, according to this method the purchase price is determined by averaging the prices on the first 250 shares bought. In our version of LIFO accounting, the price of a commodity is averaged starting with the last purchase of that item. Say we sell 250 shares of a stock, according to this method the purchase price is determined by averaging the prices on the last 250 shares bought.
+
+We decided to use a queue for storing data for FIFO accounting, and a stack for LIFO accounting. We used a linked list for the implementation of the stack and queue. We decided to test the system with just two stocks, Google and Amazon. We built a simple command line interface to test our program design.
+
+Both our stack and queue have Stock objects with the following fields:
+- The name of the stock
+- The number of shares
+- The purchase price
+
+You can assume that the first element of the structure is the stock bought first, the second was bought second, etc.
+
+Bob who just finished his part wrote the user interface. He made it so the user is able to enter information about various stocks, the number of shares, and the price. The user can then enter a query about a certain stock and the cost according to the LIFO and FIFO accounting methods for a certain number of shares.
+
+It’s a simple command line interface that goes something like this: “Enter 1 for Google stock or 2 for Amazon, 3 to quit:” Next, the system will prompt, “Input 1 to buy, 2 to sell:” After that we get a prompt to enter “How many stocks:” the user wants to work with.
+
+If the user is placing an order to buy, they will enter the number of shares and the price.
+
+If the user wants to sell, the user needs to enter the number of shares and the selling price. Bob forgot to:
+		< ask for the selling price > 
+		do a lot of the calculations as well.
+		< put any error checking in the program > 
+			A user can attempt to sell a stock they haven’t bought. Right now, this is causing a runtime exception 
+
+Specifically, here is what you need to do.
+First, add the missing functionality in Controller.java to finish the sellLIFO and sellFIFO methods.
+
+Next, provide error checking so users can’t sell a stock they don’t own or try to sell more stock than they own. Eliminate that Runtime exception.
+
+Next, change the user input, so the user enters the stock name they wish to buy or sell instead of just choosing between Google and Amazon. Keep the command line interface since we are only in the testing phase. Eventually a GUI can be added.
+
+Remember, the project design dictates the layout and design of the application. You are not redesigning this project, so don’t change ANY other methods or objects. You may only edit the Controller.java file. The other files, Stock.java and Driver.java, are for your reference and testing. DO NOT make any changes to these two support objects.
+
+Last, submit the finished Controller.java file.
+
+Upload your ORIGINAL work to BlackBoard before the due date and time. No Google, Cheg, 'collaborations', or any unoriginal work will be accepted.
+
+
+Questions about validation:
+	.Can I buy something for 0 or less dollars? NO
+
+	.Can I buy 0 qualtity? NO
+
+	.Bob is using push on both lists. do you want to
+
+	.How soon should a user be notified that they're selling more stocks than they have? I can wait until they add LIFO or FIFO choice and when the correct list is fed to the function, I itterate through to know the total stocks available and give error if the number is larger than their inventory
+
+	.can stocks be of different kinds but they're bought from the companies google and amazon?
+
+	.Which is LIFO FIFO accounting for- determining profit from a sale or determining the price to sell??? When selling, user says the amount they want to sell and how many but they want to see if that is profitable? Because we said "FIFO and LIFO accounting used for determining the “cost” of a stock." Why are we allowing user to input their price?
+
+	.can I add new methods to validate for user input? Yes
+
+narrative: 
+Enter 1 for Google stock or 2 for Amazon, 3 to quit:
+Input 1 to buy, 2 to sell:
+How many stocks:
+At what price: 
+
+https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html
