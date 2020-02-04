@@ -12,16 +12,62 @@
 
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.HashMap;;
 
 public class Controller {
 	
 	private static Scanner input = new Scanner(System.in);
 	private static int numOfAmazonStocks = 0;
 	private static int numOfGoogleStocks = 0;
+
+	public class StockTransactions{
+		private int totalNumOfStock;
+		private LinkedList<Stock> transactions;
+
+		public StockTransactions(){
+			this.totalNumOfStock = 0;
+			transactions = new LinkedList<Stock>();
+		}
+
+		public void increaseInventory(int newlyBoughtStocks){
+			this.totalNumOfStock += newlyBoughtStocks;
+		}
+
+		public void decreaseInventory(int newlySoldStocks){
+			this.totalNumOfStock -= newlySoldStocks;
+		}
+
+		public void addPurchase(Stock newPurchase){
+			this.transactions.push(newPurchase);
+		}
+
+		public void popTop(){
+			this.transactions.pop();
+		}
+
+		public void dequeFront(){
+			this.transactions.removeLast();
+		}
+
+		public Stock peekHead(){
+			return this.transactions.peek();
+		}
+
+		public Stock peekTail(){
+			return this.transactions.peekLast();
+		}
+
+		public int getTotalNumOfStocks(){
+			return this.totalNumOfStock;
+		}
+
+		public LinkedList<Stock> getTransactions(){
+			return this.transactions;
+		}
+	}
 	
 	public Controller() {
-		LinkedList<Stock> googList = new LinkedList<Stock>();
-		LinkedList<Stock> amazList = new LinkedList<Stock>();
+		HashMap<String, StockTransactions> availableStocks= new HashMap<String, StockTransactions>();
 
 		int controlNum, quantity;
 		String selectedStock;
@@ -29,12 +75,19 @@ public class Controller {
 		
 		do {
 			selectedStock = getStockChoice();
-			/**
-			 * ext, change the user input, so the user enters the stock 
-			 * name they wish to buy or sell instead of just choosing between Google and Amazon. 
-			 */
+			
 			if(selectedStock.equals("quit"))
 				break;
+			
+			StockTransactions stock;
+			//check if a transaction obj exists
+			if( availableStocks.containsKey(selectedStock)){
+				stock = availableStocks.get(selectedStock);
+			}
+			else{
+				stock = new StockTransactions();
+				availableStocks.put(selectedStock, stock);
+			}
 			
 			System.out.print("Input 1 to buy, 2 to sell: ");
 			int tempcontrolNum = input.nextInt();
@@ -42,25 +95,33 @@ public class Controller {
 
 			quantity = getQuantity(selectedStock, controlNum);
 
-			if(quantity == -1)
-				break;
+			// validate if they're selling more stocks than they have
+			if(controlNum == 2){
+				if(stock.getTotalNumOfStocks() < quantity){
+					System.out.printf("You don't have %d %s stocks. You have %d stocks. Try again", quantity, selectedStock, stock.getTotalNumOfStocks());
+					break;
+				}	
+			}
 
 			System.out.print("At what price: ");
 			double tempPrice = input.nextDouble();
 
 			//validating price to sell or buy at
-			while( tempPrice < 0){
+			while( tempPrice <= 0){
 				System.out.println("Price can't be negative. Please enter a valid price: ");
 				tempPrice = input.nextDouble();
 			}
 			price = tempPrice;
 
 			if(controlNum == 1) {// buying 
-				if(selectedStock.equals("google")) {//buying x# of GOOGLE'S stock for $7
-					Controller.buyStock(googList, "Google", quantity, price);
-				}
-				else
-					Controller.buyStock(amazList, "Amazon", quantity, price);
+				Controller.buyStock(stock, selectedStock, quantity, price);
+				//update the hashmap with the new changes of obj
+				//availableStocks.replace(selectedStock, stock);
+				System.out.println("\n NOT UPDATING THE HASHMAP AFTER BYUING");
+				System.out.println("CHECKING HASH MAP BEFORE SELLING");
+				availableStocks.entrySet().forEach(entry->{
+					System.out.println(entry.getKey() + " " + entry.getValue().peekHead().getQuantity());  
+				});
 			}
 			
 			else {// selling
@@ -68,39 +129,34 @@ public class Controller {
 				tempcontrolNum = input.nextInt();
 				controlNum = validateControlChoice(tempcontrolNum);
 
-				if(controlNum == 1) {// if LIFO 					
-					if(selectedStock.equals("google")){
-						Controller.sellLIFO(googList, quantity, price);
-					}
-					else{// if amazon
-						Controller.sellLIFO(amazList, quantity, price);
-					}
+				if(controlNum == 1) {// if LIFO 	
+					Controller.sellLIFO(stock, quantity, price);
+					System.out.println("\nCHECKING THE HASH MAP");
+
+					availableStocks.entrySet().forEach(entry->{
+						System.out.println(entry.getKey() + " " + entry.getValue().peekHead().getQuantity());  
+					 });
 				}
-				else { // if FIFO
-					if(selectedStock.equals("google")) 
-						Controller.sellFIFO(googList, quantity, price);
-					else // if amazon
-						Controller.sellFIFO(amazList, quantity, price);
-				}
+				// else { // if FIFO
+				// 	Controller.sellFIFO(stock, quantity, price);
+				// }
 			}
 			
 		} while(true);
 		input.close();
 	}
 	
-	// LinkedList<Stock>
-	public static void buyStock(LinkedList<Stock> list, String name, int quantity, double price) {
+	// LinkedList<Stock> list
+	public static void buyStock(StockTransactions stock, String name, int quantity, double price) {
 		Stock temp = new Stock(name,quantity,price);
-		list.push(temp);
+		stock.addPurchase(temp);
+		stock.increaseInventory(quantity);
+		
 		System.out.printf("You bought %d shares of %s stock at $%.2f per share %n", quantity, name, price);
 
-		if( name.equals("amazon") )
-			numOfAmazonStocks += quantity;
-		else
-			numOfGoogleStocks += quantity;
 	}
-	
-	public static void sellLIFO(LinkedList<Stock> list, int numToSell, double price) {
+	//LL<Stock> list
+	public static void sellLIFO(StockTransactions stock, int numToSell, double price) {
 	    // You need to write the code to sell the stock using the LIFO method (Stack)
 		// You also need to calculate the profit/loss on the sale
 		// averaging the prices on the last numToSell# shares from given list stack
@@ -108,39 +164,30 @@ public class Controller {
 	    double total = 0; // this variable will store the total after the sale
 		double profit = 0; // the price paid minus the sale price, negative # means a loss
 		int remainder = numToSell;
-
-		//for iteration
-		int currentQuantity;
-		double curentPrice;
 		
 		System.out.printf("\nWe're selling %d stocks", numToSell);
-
-		while(remainder != 0){
-			currentQuantity = list.peek().getQuantity();
-			curentPrice = list.peek().getPrice();
-
-			if(currentQuantity <= remainder){
-				total = (currentQuantity * curentPrice ) + total;
-				remainder -= currentQuantity;
-				list.pop();
-				System.out.println("\nPopped a node :> ");
-			}
-			else{
-				total = total +(remainder * curentPrice);
-				list.peek().setQuantity(currentQuantity - remainder);
-				System.out.println("\nChanged the quantity of a node :> ");
-				remainder = 0;
-			}
-			System.out.printf("\nremainder is: %d ", remainder);
-			System.out.println("\nThe quantity of the top node is : " + list.peek().getQuantity());
+		
+		while(remainder > stock.peekHead().getQuantity()){
+			total = (stock.peekHead().getQuantity() * stock.peekHead().getPrice() ) + total;
+			remainder -= stock.peekHead().getQuantity();
+			stock.decreaseInventory(stock.peekHead().getQuantity());
+			stock.popTop();
+			System.out.println("\nPopped a node :> ");
 		}
+		stock.peekHead().setQuantity(stock.peekHead().getQuantity() - remainder);
+		total += (remainder * stock.peekHead().getPrice()); 
+		stock.decreaseInventory(remainder);
 
-		//																				the name of head's name
-		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, list.element().getName(), total/numToSell);
+		System.out.printf("\nremainder is: %d ", remainder);
+		System.out.println("\nThe quantity of the top node is : " + stock.peekHead().getQuantity());
+
+		//																			the name of head's name
+		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, "YOUR CHOICE", total/numToSell);
+		profit = (numToSell * price) - total;
 	    System.out.printf("You made $%.2f on the sale %n", profit);
 	}
-	
-	public static void sellFIFO(LinkedList<Stock> list, int numToSell, double price) {
+/*	
+	public static void sellFIFO(StockTransactions stock, int numToSell, double price) {
 	    // You need to write the code to sell the stock using the FIFO method (Queue)
 	    // You also need to calculate the profit/loss on the sale
 	    double total = 0; // this variable will store the total after the sale
@@ -151,14 +198,14 @@ public class Controller {
 		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, list.element().getName(), total/numToSell);
 	    System.out.printf("You made $%.2f on the sale %n", profit);
 	}
-
+*/
 	public static String getStockChoice(){
-		String message = "Enter \"Google\" for Google stock, \"Amazon\" for Amazon stock, or \"Quit \" to terminate the program: ";
+		String message = "Enter the name of stock you want to buy or \"Quit \" to terminate the program: ";
 		System.out.print(message);
 		String tempstockSelect = input.next().toLowerCase();
 
-		//Validating stock input
-		while( !tempstockSelect.equals("google") && !tempstockSelect.equals("amazon") && !tempstockSelect.equals("quit")){
+		//Validating stock input for letters only
+		while( !tempstockSelect.matches("[a-zA-Z]+") ){
 			System.out.println("Invalid input. " + message);
 			tempstockSelect = input.next().toLowerCase();
 		}
@@ -181,22 +228,6 @@ public class Controller {
 		while(tempquantity < 1){
 			System.out.println("Quantity can't be negative or zero. Enter how many stocks: ");
 			tempquantity = input.nextInt();
-		}
-
-		// validate if they're selling more stocks than they have
-		if(controlNum == 2){
-			if(selectedStock.equals("amazon")){
-				if(tempquantity > numOfAmazonStocks){
-					System.out.printf("You don't have %d %s stocks. You have %d stocks. Try again", tempquantity,selectedStock, numOfAmazonStocks);
-					return -1;
-				}
-			}
-			else{
-				if(tempquantity > numOfGoogleStocks){
-					System.out.printf("You don't have %d %s stocks. You have %d stocks. Try again", tempquantity, selectedStock, numOfGoogleStocks);
-					return -1;
-				}
-			}	
 		}
 		return tempquantity;
 	}
