@@ -123,7 +123,7 @@ public class Controller {
 		} while(true);
 		input.close();
 	}
-	
+
 	public static void buyStock(StockTransactions stock, String name, int quantity, double price) {
 		Stock temp = new Stock(name,quantity,price);
 		stock.addPurchase(temp);
@@ -157,9 +157,9 @@ public class Controller {
 		System.out.printf("\nremainder is: %d ", remainder);
 		System.out.println("\nThe quantity of the top node is : " + stock.peekHead().getQuantity());
 
-		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, stock.peekHead().getName(),total/numToSell);
+		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, stock.peekHead().getName(), price);
 		
-		profit = total - (numToSell * price);
+		profit =(numToSell * price) - total;
 
 	    System.out.printf("You made $%.2f on the sale %n", profit);
 	}
@@ -184,8 +184,8 @@ public class Controller {
 		
 		stock.decreaseInventory(remainder);
 
-		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, stock.peekTail().getName(), total/numToSell);
-		profit = total - (numToSell * price);
+		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, stock.peekTail().getName(), price);
+		profit = (numToSell * price) - total;
 		System.out.printf("You made $%.2f on the sale %n", profit);
 	}
 
