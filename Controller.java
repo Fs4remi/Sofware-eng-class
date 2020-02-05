@@ -2,14 +2,6 @@
 // The main functionality for buying and selling the stocks are in this controller object.
 // This is the ONLY file you may edit
 
-/**
- * stock obj has {String name, int quantity, double price}
- * Controller()
- * buyStock(stock List, name, quantity, price)
- * sellLIFO(stock List, numbertosell)
- * sellFIFO(stock List, numbertosell)
- */
-
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.HashMap;;
@@ -17,8 +9,6 @@ import java.util.HashMap;;
 public class Controller {
 	
 	private static Scanner input = new Scanner(System.in);
-	private static int numOfAmazonStocks = 0;
-	private static int numOfGoogleStocks = 0;
 
 	public class StockTransactions{
 		private int totalNumOfStock;
@@ -115,13 +105,6 @@ public class Controller {
 
 			if(controlNum == 1) {// buying 
 				Controller.buyStock(stock, selectedStock, quantity, price);
-				//update the hashmap with the new changes of obj
-				//availableStocks.replace(selectedStock, stock);
-				System.out.println("\n NOT UPDATING THE HASHMAP AFTER BYUING");
-				System.out.println("CHECKING HASH MAP BEFORE SELLING");
-				availableStocks.entrySet().forEach(entry->{
-					System.out.println(entry.getKey() + " " + entry.getValue().peekHead().getQuantity());  
-				});
 			}
 			
 			else {// selling
@@ -131,22 +114,16 @@ public class Controller {
 
 				if(controlNum == 1) {// if LIFO 	
 					Controller.sellLIFO(stock, quantity, price);
-					System.out.println("\nCHECKING THE HASH MAP");
-
-					availableStocks.entrySet().forEach(entry->{
-						System.out.println(entry.getKey() + " " + entry.getValue().peekHead().getQuantity());  
-					 });
 				}
-				// else { // if FIFO
-				// 	Controller.sellFIFO(stock, quantity, price);
-				// }
+				else { // if FIFO
+					Controller.sellFIFO(stock, quantity, price);
+				}
 			}
 			
 		} while(true);
 		input.close();
 	}
 	
-	// LinkedList<Stock> list
 	public static void buyStock(StockTransactions stock, String name, int quantity, double price) {
 		Stock temp = new Stock(name,quantity,price);
 		stock.addPurchase(temp);
@@ -155,7 +132,7 @@ public class Controller {
 		System.out.printf("You bought %d shares of %s stock at $%.2f per share %n", quantity, name, price);
 
 	}
-	//LL<Stock> list
+
 	public static void sellLIFO(StockTransactions stock, int numToSell, double price) {
 	    // You need to write the code to sell the stock using the LIFO method (Stack)
 		// You also need to calculate the profit/loss on the sale
@@ -172,7 +149,6 @@ public class Controller {
 			remainder -= stock.peekHead().getQuantity();
 			stock.decreaseInventory(stock.peekHead().getQuantity());
 			stock.popTop();
-			System.out.println("\nPopped a node :> ");
 		}
 		stock.peekHead().setQuantity(stock.peekHead().getQuantity() - remainder);
 		total += (remainder * stock.peekHead().getPrice()); 
@@ -181,24 +157,38 @@ public class Controller {
 		System.out.printf("\nremainder is: %d ", remainder);
 		System.out.println("\nThe quantity of the top node is : " + stock.peekHead().getQuantity());
 
-		//																			the name of head's name
-		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, "YOUR CHOICE", total/numToSell);
-		profit = (numToSell * price) - total;
+		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, stock.peekHead().getName(),total/numToSell);
+		
+		profit = total - (numToSell * price);
+
 	    System.out.printf("You made $%.2f on the sale %n", profit);
 	}
-/*	
+	
 	public static void sellFIFO(StockTransactions stock, int numToSell, double price) {
 	    // You need to write the code to sell the stock using the FIFO method (Queue)
 	    // You also need to calculate the profit/loss on the sale
 	    double total = 0; // this variable will store the total after the sale
 		double profit = 0; // the price paid minus the sale price, negative # means a loss
+		int remainder = numToSell;
 		
-		System.out.println(list.peek().toString());
+		System.out.printf("\nWe're selling %d stocks", numToSell);
+		
+		while(remainder > stock.peekTail().getQuantity()){
+			total = (stock.peekTail().getQuantity() * stock.peekTail().getPrice() ) + total;
+			remainder -= stock.peekTail().getQuantity();
+			stock.decreaseInventory(stock.peekTail().getQuantity());
+			stock.dequeFront();
+		}
+		stock.peekTail().setQuantity(stock.peekTail().getQuantity() - remainder);
+		total += (remainder * stock.peekTail().getPrice()); 
+		
+		stock.decreaseInventory(remainder);
 
-		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, list.element().getName(), total/numToSell);
-	    System.out.printf("You made $%.2f on the sale %n", profit);
+		System.out.printf("You sold %d shares of %s stock at %.2f per share %n", numToSell, stock.peekTail().getName(), total/numToSell);
+		profit = total - (numToSell * price);
+		System.out.printf("You made $%.2f on the sale %n", profit);
 	}
-*/
+
 	public static String getStockChoice(){
 		String message = "Enter the name of stock you want to buy or \"Quit \" to terminate the program: ";
 		System.out.print(message);
